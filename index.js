@@ -1,6 +1,7 @@
 var express  = require("express");
 var app = express();
 var models = require("./models");
+var bodyParser = require("body-parser");
 
 module.exports = app;
 /*app.use(
@@ -11,10 +12,19 @@ module.exports = app;
     })
 );*/
 
+
+app.use(
+    bodyParser.urlencoded({
+        extended: true
+    })
+);
+
+app.use(bodyParser.json());
+
 require("./routes")(app, models);
 
 var port=process.env.PORT || 8888;
 
 var server = app.listen(port, function() {
-    console.log("Server started port 8888...");
+    console.log("Server started port "+port+"...");
 });

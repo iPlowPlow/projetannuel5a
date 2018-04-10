@@ -41,7 +41,6 @@ module.exports = function(app, models) {
         }
     });
 
-	// a refaire
 	//GET ALL USER
     app.get("/users", function(req, res, next) {
         
@@ -62,8 +61,9 @@ module.exports = function(app, models) {
     
     });
 
+	//pas fini
 	//GET USER BY ID
-    app.get("/user/:idUser", function(req, res, next) {
+    app.get("/user/findById", function(req, res, next) {
         if (req.params.idUser){
             var User = models.User;
             var request = {
@@ -81,6 +81,70 @@ module.exports = function(app, models) {
                     res.json({
                         "code" : 3,
                         "message" : "User not found"
+                    });
+                }
+            });
+        } else {
+            res.json({
+                "code" : 1,
+                "message" : "Missing required parameters"
+            });
+        }
+    });
+	
+	
+	   app.get("/user/find", function (req, res, next) {
+        if (req.body.loginUser) {
+            var User = models.User;
+            var request = {
+                attributes: ["loginUser", "passwordUser", "emailUser", "typeUser"],
+                where: {
+                    loginUser: req.body.loginUser
+                }
+            };
+            User.find(request).then(function (result) {
+                if (result) {
+                    res.json({
+                        "code": 0,
+                        "idUser": result.idUser,
+                        "loginUser": result.loginUser,
+                        "emailUser": result.emailUser,
+                        "typeUser": result.typeUser
+                    });
+                } else {
+                    res.json({
+                        "code": 3,
+                        "message": "User not found"
+                    });
+                }
+            });
+        } else {
+            res.json({
+                "code": 1,
+                "message": "Missing required parameters"
+            });
+        }
+    });
+	
+	//GET USER BY Login
+    app.get("/user/findByLogin", function(req, res, next) {
+        if (req.body.loginUser){
+            var User = models.User;
+            var request = {
+                where: {
+                    loginUser : req.body.loginUser
+                }
+            };
+            User.find(request).then(function(result) {
+                if (result){
+                    res.json({
+                        "code" : 0,
+                        "loginUser" : result.loginUser
+                    });
+                } else {
+                    res.json({
+                        "code" : 3,
+                        "message" : "User not found with this login"
                     });
                 }
             });
