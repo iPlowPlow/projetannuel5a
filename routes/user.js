@@ -44,33 +44,22 @@ module.exports = function(app, models) {
 	// a refaire
 	//GET ALL USER
     app.get("/users", function(req, res, next) {
-        if (req.body.loginUser){
-            var User = models.User;
-            var request = {
-                attributes: ["loginUser", "emailUser", "typeUser"],  
-            };
-            User.findAll(request).then(function(result){
-                if(result){
-                    res.json({
-                        "code" : 0,
-                        "idUser" : result.idUser,
-                        "loginUser" : result.loginUser,
-                        "emailUser" : result.emailUser,
-                        "typeUser" : result.typeUser
-                    });
-                }else{
-                    res.json({
-                        "code" : 3,
-                        "message" : "User not found"
-                    });
-                }
-            });
-        }else{
-            res.json({
-                "code" : 1,
-                "message" : "Missing required parameters"
-            });
-        }
+        
+        var User = models.User;
+        var request = {
+            attributes: ["loginUser", "emailUser", "typeUser"],  
+        };
+        User.findAll(request).then(function(result){
+            if(result){
+                res.json(result);
+            }else{
+                res.json({
+                    "code" : 3,
+                    "message" : "User not found"
+                });
+            }
+        });
+    
     });
 
 	//GET USER BY ID
@@ -150,9 +139,7 @@ module.exports = function(app, models) {
         }
     });
 	
-	// A refaire
-    app.delete("/deleteuser/:id", function (req, res, next) {
-        
+    app.delete("/deleteuser/:id", function (req, res, next) {  
         var u1 = new user();
         if (req.params.id) {
             u1.delete(req.params.id, function (result) {
@@ -160,29 +147,6 @@ module.exports = function(app, models) {
                 res.json({
                     "user":"deleted"
                 });
-            });
-        }
-    });
-
-    app.get("/user/profile/:id", function (req, res, next) {
-        var User = models.User;
-        if (req.params.id) {
-            User.findById(req.params.id).then(function(result){
-                if(result){
-                    res.json({
-                        "code" : 0,
-                        "idUser" : result.idUser,
-                        "loginUser" : result.loginUser,
-                        "emailUser" : result.emailUser,
-                        "typeUser" : result.typeUser,
-                        "createdAt" : result.createdAt
-                    });
-                }else{
-                    res.json({
-                        "code" : 3,
-                        "message" : "User not found"
-                    })
-                }
             });
         }
     });
