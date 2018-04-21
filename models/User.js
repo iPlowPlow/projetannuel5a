@@ -16,7 +16,16 @@ module.exports = sequelize.import("user", function(sequelize, Datatypes) {
 		passwordUser : {
 			type : Datatypes.STRING
 		},
+		saltUser : {
+			type : Datatypes.STRING
+		},
 		typeUser : {
+			type : Datatypes.STRING
+		},
+		mailValidationUser : {
+			type : Datatypes.BOOLEAN
+		},
+		validationCodeUser : {
 			type : Datatypes.STRING
 		}
 	}, {
