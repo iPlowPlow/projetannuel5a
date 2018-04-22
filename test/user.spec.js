@@ -25,26 +25,26 @@ describe("user",function(){
                     done();
                 }
             });
-        })
+        });
     });
 
     describe("GET /user/find", function(){
         it("should return a user", function(){
             var data={loginUser: "test"};
             return request(api).get("/user/find").send(data).expect(200).expect({"code":"0","emailUser":"test@test.com","loginUser":"test","typeUser":"user"});
-        })
+        });
     });
 
     describe("GET /users",function(){
         it("should  display a list of user", function(){
             return request(api).get("/users").expect(200);
-        })
+        });
     });
 
     describe("DELETE /deleteUser/1",function(){
         it("should  deleteUser", function(){
             return request(api).delete("/deleteUser/1").expect(200).expect({"code":"0", "message":"user deleted"});
-        })
+        });
     });
 	
 });

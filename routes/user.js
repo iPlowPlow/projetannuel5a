@@ -12,9 +12,7 @@ module.exports = function(app, models) {
 
 	//CREATE USER
     app.post("/user", function(req, res, next) {
-        if (req.body.loginUser
-            && req.body.emailUser && req.body.passwordUser) {
-
+        if (req.body.loginUser && req.body.emailUser && req.body.passwordUser) {
             var User = models.User;
             var id = null;
             if(req.body.idUser){
@@ -111,10 +109,10 @@ module.exports = function(app, models) {
             };
             User.find(request).then(function(result) {
                 if (result){
-                    var loginUser = result.loginUser
-                    var attributes = {}
+                    var loginUser = result.loginUser;
+                    var attributes = {};
                     attributes.mailValidationUser = true;
-                    attributes.validationCodeUser = ""
+                    attributes.validationCodeUser = "";
                     var request2 = {
                         where: {
                             loginUser : loginUser
@@ -355,7 +353,7 @@ module.exports = function(app, models) {
                         }
                     }).catch(function(err){
                         console.log(err);
-                    })
+                    });
                 }else{
                     res.json({
                         "code" : 3,
@@ -363,7 +361,7 @@ module.exports = function(app, models) {
                     });
                 }               
         
-              })          
+              });          
         }
     });
-}
+};
