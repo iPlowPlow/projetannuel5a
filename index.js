@@ -1,6 +1,10 @@
 var express  = require("express");
 var app = express();
 var models = require("./models");
+
+var config = require("config");  // we use node-config to handle environments
+require("./env.js");
+
 var bodyParser = require("body-parser");
 
 module.exports = app;
@@ -20,6 +24,7 @@ app.use(
 );
 
 app.use(bodyParser.json());
+
 
 require("./routes")(app, models);
 

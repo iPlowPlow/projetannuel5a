@@ -16,7 +16,12 @@ module.exports = function(app, models) {
             && req.body.emailUser && req.body.passwordUser) {
 
             var User = models.User;
+            var id = null;
+            if(req.body.idUser){
+                id = req.body.idUser;
+            }
             User.create({
+                "idUser" : id,
                 "loginUser" : req.body.loginUser,
                 "emailUser" : req.body.emailUser,
                 "passwordUser" : req.body.passwordUser,
@@ -143,7 +148,7 @@ module.exports = function(app, models) {
             });
         }
     });
-	
+	    //On récupère les infos persos
 	   app.get("/user/find", function (req, res, next) {
         if (req.body.loginUser) {
             var User = models.User;
@@ -177,7 +182,7 @@ module.exports = function(app, models) {
         }
     });
 	
-	//GET USER BY Login
+	//GET USER BY Login (pour vérifier si il existe)
     app.get("/user/findByLogin", function(req, res, next) {
         if (req.body.loginUser){
             var User = models.User;
@@ -324,15 +329,41 @@ module.exports = function(app, models) {
         }
     });
 	
-    app.delete("/deleteuser/:id", function (req, res, next) {  
-        var u1 = new user();
+    app.delete("/deleteUser/:id", function (req, res, next) {  
+        var User = models.User;
+   
         if (req.params.id) {
-            u1.delete(req.params.id, function (result) {
-                res.status(200);
-                res.json({
-                    "user":"deleted"
-                });
-            });
+            var request = {
+                where: {
+                    idUser : req.params.id
+                }
+            };
+            User.find({where: {idUser : req.params.id}}).then(function(result){
+                if(result){
+                    result.destroy().then(function(success){
+                        if(success){
+                            res.json({
+                                "code" : 0,
+                                "message":"user deleted"
+                            });
+                        }else{
+                            res.json({
+                                "code" : 2,
+                                "message" : "Sequelize error",
+                                "error" : err
+                            });
+                        }
+                    }).catch(function(err){
+                        console.log(err);
+                    })
+                }else{
+                    res.json({
+                        "code" : 3,
+                        "message" : "User not found"
+                    });
+                }               
+        
+              })          
         }
     });
 }
