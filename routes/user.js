@@ -118,7 +118,6 @@ module.exports = function(app, models) {
                             loginUser : loginUser
                         }
                     };
-
                     User.update(attributes, request2).then(function (results) {
                         res.json({
                             "code":0,
@@ -182,6 +181,7 @@ module.exports = function(app, models) {
 	
 	//GET USER BY Login (pour vérifier si il existe)
     app.get("/user/findByLogin", function(req, res, next) {
+        console.log(req.body)
         if (req.body.loginUser){
             var User = models.User;
             var request = {
@@ -194,7 +194,7 @@ module.exports = function(app, models) {
                     res.json({
                         "code" : 0,
                         "loginUser" : result.loginUser,
-                        
+                        "emailUser" : result.emailUser
                     });
                 } else {
                     res.json({
@@ -295,7 +295,6 @@ module.exports = function(app, models) {
                     if(bcrypt.compareSync(req.body.passwordUser+result.saltUser, result.passwordUser)){
                         res.json({
                             "code" : 0,
-                            "idUser" : result.idUser,
                             "loginUser" : result.loginUser,
                             "emailUser" : result.emailUser,
                             "typeUser" : result.typeUser
@@ -363,5 +362,47 @@ module.exports = function(app, models) {
         
               });          
         }
+    });
+
+    app.post("/user/update", function (req, res, next) {
+
+        if(req.body.loginUser){
+            var request = {
+                "where": {
+                    loginUser: req.body.loginUser
+                }
+            };
+    
+            var attributes = {};
+            if (req.body.emailUser) {
+                attributes.emailUser = req.body.emailUser;
+            }
+            if (req.body.passwordUser && req.body.saltUser) {
+                attributes.passwordUser = req.body.passwordUser;
+                attributes.saltUser = req.body.saltUser;
+            }
+            var User = models.User;
+            User.update(attributes, request).then(function (results) {
+                res.json({
+                    "code":0,
+                    "message":"User updated"
+                });
+            }).catch(function (err) {
+                console.log(err)
+                res.json({
+                    "code": 2,
+                    "message": "Sequelize error",
+                    "error": err
+                });
+            });
+    
+    
+        }else{
+            res.json({
+                "code" : 1,
+                "message" : "Missing required parameters"
+            });
+        }
+        
     });
 };
