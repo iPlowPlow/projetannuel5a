@@ -27,7 +27,28 @@ module.exports = sequelize.import("user", function(sequelize, Datatypes) {
 		},
 		validationCodeUser : {
 			type : Datatypes.STRING
-		}
+		},
+		lastNameUser : {
+			type : Datatypes.STRING
+		},
+		firstNameUser : {
+			type : Datatypes.STRING
+		},
+		birthUser : {
+			type : Datatypes.DATEONLY
+		},
+		sexUser : {
+			type : Datatypes.STRING
+		},
+		addressUser : {
+			type : Datatypes.STRING
+		},
+		cityUser : {
+			type : Datatypes.STRING
+		},
+		cpUser : {
+			type : Datatypes.STRING
+		},
 	}, {
 		paranoid : true,
 		freezeTab : true,

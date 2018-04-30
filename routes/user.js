@@ -181,7 +181,6 @@ module.exports = function(app, models) {
 	
 	//GET USER BY Login (pour vérifier si il existe)
     app.get("/user/findByLogin", function(req, res, next) {
-        console.log(req.body)
         if (req.body.loginUser){
             var User = models.User;
             var request = {
@@ -194,7 +193,14 @@ module.exports = function(app, models) {
                     res.json({
                         "code" : 0,
                         "loginUser" : result.loginUser,
-                        "emailUser" : result.emailUser
+                        "emailUser" : result.emailUser,
+                        "firstNameUser" : result.firstNameUser,
+                        "lastNameUser" : result.lastNameUser,
+                        "birthUser" : result.birthUser,
+                        "sexUser" : result.sexUser,
+                        "addressUser" : result.addressUser,
+                        "cityUser" : result.cityUser,
+                        "cpUser" : result.cpUser
                     });
                 } else {
                     res.json({
@@ -381,6 +387,17 @@ module.exports = function(app, models) {
                 attributes.passwordUser = req.body.passwordUser;
                 attributes.saltUser = req.body.saltUser;
             }
+            
+            if (req.body.firstNameUser && req.body.lastNameUser && req.body.birthUser && req.body.sexUser && req.body.addressUser && req.body.cityUser && req.body.cpUser) {
+                attributes.firstNameUser = req.body.firstNameUser;
+                attributes.lastNameUser = req.body.lastNameUser;
+                attributes.birthUser = req.body.birthUser;
+                attributes.sexUser = req.body.sexUser;
+                attributes.addressUser = req.body.addressUser;
+                attributes.cityUser = req.body.cityUser;
+                attributes.cpUser = req.body.cpUser;
+            }
+
             var User = models.User;
             User.update(attributes, request).then(function (results) {
                 res.json({
