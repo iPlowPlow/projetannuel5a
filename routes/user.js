@@ -1,14 +1,17 @@
-var bcrypt = require("bcrypt-nodejs");
-
 // Code : 
 // 0 : OK
 // 1 : missing params
 // 2 : sequelize error
 // 3 : not found, wrong pwd, ...
-// 4 : Unauthorized
+// 4 : Unorized
 // 5 : account not validated 
+// 6 : no token /token invalid
 
 module.exports = function(app, models) {
+
+    var bcrypt = require("bcrypt-nodejs");
+    var jwt    = require('jsonwebtoken');
+    var config = require("config");
 
 	//CREATE USER
     app.post("/user", function(req, res, next) {
@@ -219,12 +222,17 @@ module.exports = function(app, models) {
 
 
     //GET USER BY Login
-    app.get("/user/findByEmail", function(req, res, next) {
-        if (req.body.emailUser){
+    app.get("/user/checkExist", function(req, res, next) {
+        if (req.body.emailUser && req.body.loginUser){
             var User = models.User;
             var request = {
                 where: {
                     emailUser : req.body.emailUser
+                }
+            };
+            var request2 = {
+                where: {
+                    loginUser : req.body.loginUser
                 }
             };
             User.find(request).then(function(result) {
@@ -232,14 +240,25 @@ module.exports = function(app, models) {
                     res.json({
                         "code" : 0,
                         "emailUser" : result.emailUser,
-                        
+                        "loginUser" :"",
                     });
                 } else {
-                    res.json({
-                        "code" : 3,
-                        "message" : "User not found with this email"
+                    User.find(request2).then(function(result) {
+                        if (result){
+                            res.json({
+                                "code" : 0,
+                                "emailUser" : "",
+                                "loginUser" :result.loginUser,
+                            });
+                        }else{
+                            res.json({
+                                "code" : 3,
+                                "message" : "User not found with this email and login"
+                            });
+                        }  
                     });
-                }
+                }   
+
             });
         } else {
             res.json({
@@ -285,7 +304,7 @@ module.exports = function(app, models) {
         }
     });
 
-	//AUTH
+	//
     app.get("/user/auth", function(req, res, next) {
         if (req.body.loginUser && req.body.passwordUser) {
             var User = models.User;
@@ -299,11 +318,21 @@ module.exports = function(app, models) {
                 if(result){
                     
                     if(bcrypt.compareSync(req.body.passwordUser+result.saltUser, result.passwordUser)){
+                        const payload = {
+                            admin: result.typeUser,
+                            id: result.idUser
+                        };
+                        var token = jwt.sign(payload, "kukjhifksd489745dsf87d79+62dsfAD_-=", {
+                            expiresIn : 60*60*24
+                        });
+                       
+
                         res.json({
                             "code" : 0,
                             "loginUser" : result.loginUser,
                             "emailUser" : result.emailUser,
-                            "typeUser" : result.typeUser
+                            "typeUser" : result.typeUser,
+                            "token" : token
                         });
                     }else{
                         res.json({
@@ -318,6 +347,7 @@ module.exports = function(app, models) {
                     });
                 }
             }).catch(function(err){
+                console.log(err)
                 res.json({
                     "code" : 2,
                     "message" : "Sequelize error",
@@ -372,54 +402,124 @@ module.exports = function(app, models) {
 
     app.post("/user/update", function (req, res, next) {
 
-        if(req.body.loginUser){
-            var request = {
-                "where": {
-                    loginUser: req.body.loginUser
-                }
-            };
-    
-            var attributes = {};
-            if (req.body.emailUser) {
-                attributes.emailUser = req.body.emailUser;
-            }
-            if (req.body.passwordUser && req.body.saltUser) {
-                attributes.passwordUser = req.body.passwordUser;
-                attributes.saltUser = req.body.saltUser;
-            }
-            
-            if (req.body.firstNameUser && req.body.lastNameUser && req.body.birthUser && req.body.sexUser && req.body.addressUser && req.body.cityUser && req.body.cpUser) {
-                attributes.firstNameUser = req.body.firstNameUser;
-                attributes.lastNameUser = req.body.lastNameUser;
-                attributes.birthUser = req.body.birthUser;
-                attributes.sexUser = req.body.sexUser;
-                attributes.addressUser = req.body.addressUser;
-                attributes.cityUser = req.body.cityUser;
-                attributes.cpUser = req.body.cpUser;
-            }
-
-            var User = models.User;
-            User.update(attributes, request).then(function (results) {
-                res.json({
-                    "code":0,
-                    "message":"User updated"
-                });
-            }).catch(function (err) {
-                console.log(err)
-                res.json({
-                    "code": 2,
-                    "message": "Sequelize error",
-                    "error": err
-                });
-            });
-    
-    
-        }else{
+        if(!req.body.token){
             res.json({
-                "code" : 1,
-                "message" : "Missing required parameters"
+                "code" : 6,
+                "message" : "Missing token"
             });
+        }else{
+
+            // verifies secret and checks exp
+            jwt.verify(req.body.token,"kukjhifksd489745dsf87d79+62dsfAD_-=", function(err, decoded) {      
+                if (err) {
+                    res.json({
+                        "code" : 6,
+                        "message" : "Failed to authenticate token"
+                    });
+                    
+                } else {
+                    var idUser =null;
+                    findIdUser(req.body.loginUser).then( function(result) {
+                        idUser =result.idUser;
+                        console.log(decoded)
+                        if(!idUser || idUser!=decoded.id){
+                            res.json({
+                                "code" : 6,
+                                "message" : "Failed to authenticate token 2"
+                            });
+                        }else{
+                            
+                            if(req.body.loginUser){
+                                var request = {
+                                    "where": {
+                                        loginUser: req.body.loginUser
+                                    }
+                                };
+                        
+                                var attributes = {};
+                                if (req.body.emailUser) {
+                                    attributes.emailUser = req.body.emailUser;
+                                }
+                                if (req.body.passwordUser && req.body.saltUser) {
+                                    attributes.passwordUser = req.body.passwordUser;
+                                    attributes.saltUser = req.body.saltUser;
+                                }
+                                
+                                if (req.body.firstNameUser && req.body.lastNameUser && req.body.birthUser && req.body.sexUser && req.body.addressUser && req.body.cityUser && req.body.cpUser) {
+                                    attributes.firstNameUser = req.body.firstNameUser;
+                                    attributes.lastNameUser = req.body.lastNameUser;
+                                    attributes.birthUser = req.body.birthUser;
+                                    attributes.sexUser = req.body.sexUser;
+                                    attributes.addressUser = req.body.addressUser;
+                                    attributes.cityUser = req.body.cityUser;
+                                    attributes.cpUser = req.body.cpUser;
+                                }
+                    
+                                var User = models.User;
+                                User.update(attributes, request).then(function (results) {
+                                    res.json({
+                                        "code":0,
+                                        "message":"User updated"
+                                    });
+                                }).catch(function (err) {
+                                    console.log(err)
+                                    res.json({
+                                        "code": 2,
+                                        "message": "Sequelize error",
+                                        "error": err
+                                    });
+                                });
+                        
+                        
+                            }else{
+                                res.json({
+                                    "code" : 1,
+                                    "message" : "Missing required parameters"
+                                });
+                            }
+    
+                        } 
+
+                    }).catch(function (err) {
+                        console.log(err)
+                        res.json({
+                            "code": 2,
+                            "message": "Sequelize error",
+                            "error": err
+                        });
+                    }); 
+                }
+            })
+          
+        
         }
+
+       
         
     });
+
+    
+
+        
+
+        var findIdUser = function(login) {
+            var request = {
+                where: {
+                    loginUser : login
+                }
+            };
+            var User = models.User;
+            return User.find(request).then(function(result) {
+                if (result){ 
+                    return result.dataValues;     
+                }else{
+                  
+                    return null;
+
+                }
+            })
+        } 
+        
+        
+    
 };
