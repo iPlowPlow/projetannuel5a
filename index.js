@@ -1,6 +1,8 @@
 var express  = require("express");
 var app = express();
 var models = require("./models");
+var utils = require("./utils");
+var TokenUtils = utils.TokenUtils;
 
 var config = require("config");  // we use node-config to handle environments
 require("./env.js");
@@ -26,7 +28,7 @@ app.use(
 app.use(bodyParser.json());
 
 
-require("./routes")(app, models);
+require("./routes")(app, models, TokenUtils);
 
 var port=process.env.PORT || 8888;
 

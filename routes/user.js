@@ -7,7 +7,7 @@
 // 5 : account not validated 
 // 6 : no token /token invalid
 
-module.exports = function(app, models) {
+module.exports = function(app, models, TokenUtils) {
 
     var bcrypt = require("bcrypt-nodejs");
     var jwt    = require('jsonwebtoken');
@@ -410,99 +410,75 @@ module.exports = function(app, models) {
         }else{
 
             // verifies secret and checks exp
-            jwt.verify(req.body.token,"kukjhifksd489745dsf87d79+62dsfAD_-=", function(err, decoded) {      
-                if (err) {
+            
+            TokenUtils.findIdUser(req.body.loginUser).then( function(result) {       
+                if (TokenUtils.verifSimpleToken(req.body.token, "kukjhifksd489745dsf87d79+62dsfAD_-=", result.idUser) == false) {
                     res.json({
                         "code" : 6,
                         "message" : "Failed to authenticate token"
                     });
                     
-                } else {
-                    var idUser =null;
-                    findIdUser(req.body.loginUser).then( function(result) {
-                        idUser =result.idUser;
-                        console.log(decoded)
-                        if(!idUser || idUser!=decoded.id){
-                            res.json({
-                                "code" : 6,
-                                "message" : "Failed to authenticate token 2"
-                            });
-                        }else{
-                            
-                            if(req.body.loginUser){
-                                var request = {
-                                    "where": {
-                                        loginUser: req.body.loginUser
-                                    }
-                                };
-                        
-                                var attributes = {};
-                                if (req.body.emailUser) {
-                                    attributes.emailUser = req.body.emailUser;
-                                }
-                                if (req.body.passwordUser && req.body.saltUser) {
-                                    attributes.passwordUser = req.body.passwordUser;
-                                    attributes.saltUser = req.body.saltUser;
-                                }
-                                
-                                if (req.body.firstNameUser && req.body.lastNameUser && req.body.birthUser && req.body.sexUser && req.body.addressUser && req.body.cityUser && req.body.cpUser) {
-                                    attributes.firstNameUser = req.body.firstNameUser;
-                                    attributes.lastNameUser = req.body.lastNameUser;
-                                    attributes.birthUser = req.body.birthUser;
-                                    attributes.sexUser = req.body.sexUser;
-                                    attributes.addressUser = req.body.addressUser;
-                                    attributes.cityUser = req.body.cityUser;
-                                    attributes.cpUser = req.body.cpUser;
-                                }
-                    
-                                var User = models.User;
-                                User.update(attributes, request).then(function (results) {
-                                    res.json({
-                                        "code":0,
-                                        "message":"User updated"
-                                    });
-                                }).catch(function (err) {
-                                    console.log(err)
-                                    res.json({
-                                        "code": 2,
-                                        "message": "Sequelize error",
-                                        "error": err
-                                    });
-                                });
-                        
-                        
-                            }else{
-                                res.json({
-                                    "code" : 1,
-                                    "message" : "Missing required parameters"
-                                });
+                } else {             
+                    if(req.body.loginUser){
+                        var request = {
+                            "where": {
+                                loginUser: req.body.loginUser
                             }
-    
-                        } 
-
-                    }).catch(function (err) {
-                        console.log(err)
-                        res.json({
-                            "code": 2,
-                            "message": "Sequelize error",
-                            "error": err
+                        };
+                
+                        var attributes = {};
+                        if (req.body.emailUser) {
+                            attributes.emailUser = req.body.emailUser;
+                        }
+                        if (req.body.passwordUser && req.body.saltUser) {
+                            attributes.passwordUser = req.body.passwordUser;
+                            attributes.saltUser = req.body.saltUser;
+                        }
+                        
+                        if (req.body.firstNameUser && req.body.lastNameUser && req.body.birthUser && req.body.sexUser && req.body.addressUser && req.body.cityUser && req.body.cpUser) {
+                            attributes.firstNameUser = req.body.firstNameUser;
+                            attributes.lastNameUser = req.body.lastNameUser;
+                            attributes.birthUser = req.body.birthUser;
+                            attributes.sexUser = req.body.sexUser;
+                            attributes.addressUser = req.body.addressUser;
+                            attributes.cityUser = req.body.cityUser;
+                            attributes.cpUser = req.body.cpUser;
+                        }
+            
+                        var User = models.User;
+                        User.update(attributes, request).then(function (results) {
+                            res.json({
+                                "code":0,
+                                "message":"User updated"
+                            });
+                        }).catch(function (err) {
+                            console.log(err)
+                            res.json({
+                                "code": 2,
+                                "message": "Sequelize error",
+                                "error": err
+                            });
                         });
-                    }); 
+                    }else{
+                        res.json({
+                            "code" : 1,
+                            "message" : "Missing required parameters"
+                        });
+                    }
                 }
-            })
-          
-        
+            }).catch(function (err) {
+                res.json({
+                    "code": 2,
+                    "message": "Sequelize error",
+                    "error": err
+                });
+            })        
         }
-
-       
-        
+    
     });
 
-    
 
-        
-
-        var findIdUser = function(login) {
+        /*var findIdUser = function(login) {
             var request = {
                 where: {
                     loginUser : login
@@ -521,5 +497,21 @@ module.exports = function(app, models) {
         } 
         
         
+        var verifSimpleToken = function(token, secret, idUser){
+          
+            console.log(idUser);
+            console.log(idUser);
+            return jwt.verify(token,secret, function(err, decoded) {
+                if (err) {
+                    return false;
+                }else{
+                    if(!idUser || idUser!=decoded.id){
+                        return false;
+                     }else{
+                         return true;
+                     }
+                }
+            });      
+        }*/
     
 };
