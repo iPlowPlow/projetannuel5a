@@ -1,4 +1,4 @@
-var env = process.argv[2] || "test";
+var env = process.argv[2] || "development";
 
 switch (env) {
     case "development" :
