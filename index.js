@@ -18,7 +18,6 @@ module.exports = app;
     })
 );*/
 
-
 app.use(
     bodyParser.urlencoded({
         extended: true
@@ -26,7 +25,6 @@ app.use(
 );
 
 app.use(bodyParser.json());
-
 
 require("./routes")(app, models, TokenUtils);
 

@@ -318,7 +318,7 @@ module.exports = function(app, models, TokenUtils) {
                 if(result){
                     
                     if(bcrypt.compareSync(req.body.passwordUser+result.saltUser, result.passwordUser)){
-                        const payload = {
+                        var payload = {
                             admin: result.typeUser,
                             id: result.idUser
                         };
@@ -347,7 +347,7 @@ module.exports = function(app, models, TokenUtils) {
                     });
                 }
             }).catch(function(err){
-                console.log(err)
+                //console.log(err);
                 res.json({
                     "code" : 2,
                     "message" : "Sequelize error",
@@ -452,7 +452,7 @@ module.exports = function(app, models, TokenUtils) {
                                 "message":"User updated"
                             });
                         }).catch(function (err) {
-                            console.log(err)
+                            //console.log(err);
                             res.json({
                                 "code": 2,
                                 "message": "Sequelize error",
@@ -472,7 +472,7 @@ module.exports = function(app, models, TokenUtils) {
                     "message": "Sequelize error",
                     "error": err
                 });
-            })        
+            })  ;      
         }
     
     });

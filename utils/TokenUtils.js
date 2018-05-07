@@ -17,8 +17,8 @@ var findIdUser = function(login) {
         }else{        
             return null;
         }
-    })
-} 
+    });
+};
 
 
 var verifSimpleToken = function(token, secret, idUser){
@@ -33,7 +33,7 @@ var verifSimpleToken = function(token, secret, idUser){
              }
         }
     });      
-}
+};
 
 
 module.exports={
