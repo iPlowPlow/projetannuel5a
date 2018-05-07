@@ -11,7 +11,7 @@ module.exports = function(app, models, TokenUtils) {
 
     var bcrypt = require("bcrypt-nodejs");
     var jwt    = require('jsonwebtoken');
-    var config = require("config");
+ 
 
 	//CREATE USER
     app.post("/user", function(req, res, next) {

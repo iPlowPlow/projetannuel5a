@@ -26,7 +26,7 @@ var verifSimpleToken = function(token, secret, idUser){
         if (err) {
             return false;
         }else{
-            if(!idUser || "idUser"!=decoded.id){
+            if(!idUser || idUser!=decoded.id){
                 return false;
              }else{
                  return true;

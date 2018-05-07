@@ -4,6 +4,7 @@ var CategoryModel = require("./Category");
 var ItemModel = require("./Item");
 var ProductModel = require("./Product");
 var UnitModel = require("./Unit");
+var ProducerModel = require("./Producer");
 
 seq.sync();
 
@@ -13,5 +14,6 @@ module.exports = {
     "Category" : CategoryModel,
     "Item" : ItemModel,
     "Product" : ProductModel,
-    "Unit": UnitModel
+    "Unit": UnitModel,
+    "Producer": ProducerModel,
 };
