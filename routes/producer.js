@@ -17,13 +17,17 @@ module.exports = function(app, models, TokenUtils) {
                     });
                     
                 } else {
-                    
-
+                    var avatar = "default";
+                    var extension;
+                    if(req.body.avatarProducer.name!=""){
+                        extension = req.body.avatarProducer.name.split('.');
+                        avatar = "avatar."+extension[extension.length-1];
+                    }
                     Producer.create({
                         "idUserProducer" : idUser,
                         "lastNameProducer" : req.body.lastNameProducer,
                         "firstNameProducer" : req.body.firstNameProducer,
-                        "emailProducer" : req.body.eMailProducer,
+                        "emailProducer" : req.body.emailProducer,
                         "phoneProducer" : req.body.phoneProducer,
                         "birthProducer" : req.body.birthProducer,
                         "sexProducer" : req.body.sexProducer,
@@ -31,6 +35,7 @@ module.exports = function(app, models, TokenUtils) {
                         "cityProducer" : req.body.cityProducer,
                         "cpProducer" : req.body.cpProducer,
                         "descriptionProducer" : req.body.descriptionProducer,
+                        "avatarProducer" : avatar
                     }).then(function(result){
                         var request = {
                             "where": {
@@ -46,13 +51,13 @@ module.exports = function(app, models, TokenUtils) {
                            
                         });
                         var filePath=null;
-                        if(req.body.avatarProducer!=null){
-                            filePath = "ressources/producerAvatar/"+idUser+"/";
+                        if(req.body.avatarProducer.name!=""){
+                            filePath = "ressources/producerAvatar/"+result.idProducer+"/";
                             if (!fs.existsSync(filePath)) {
                                 fs.mkdirSync(filePath)
                             }
                             
-                            var extension = req.body.avatarProducer.name.split('.');
+                           
                             var oldpath = req.body.avatarProducer.path;
                             var newpath = filePath+ "avatar."+extension[extension.length-1];
     
@@ -100,5 +105,73 @@ module.exports = function(app, models, TokenUtils) {
         }
     });
 
+
+    app.get("/getPublicInformations", function(req, res, next) {
+        if (req.body.idProducer){
+            
+            var Producer = models.Producer;
+            var CommentProducer = models.CommentProducer;
+            var User = models.User;
+            
+            var request = {
+                attributes: ["idUserProducer", "lastNameProducer", "firstNameProducer", "descriptionProducer", "avatarProducer"],
+                where: {
+                    idProducer : req.body.idProducer
+                }
+            };
+            var jsonResult = {};
+            Producer.find(request).then(function(result){
+                if(result){
+                    jsonResult.code =0;
+                    jsonResult.lastNameProducer = result.lastNameProducer;
+                    jsonResult.firstNameProducer = result.firstNameProducer;
+                    jsonResult.descriptionProducer = result.descriptionProducer;
+                    jsonResult.avatarProducer = result.avatarProducer;
+
+                    var request2 =  {
+                        where: {
+                            idProducer : req.body.idProducer
+                        }
+                    }
+                  
+                    CommentProducer.findAll(request2).then(function(result){
+
+
+
+                    }).catch(function(err){
+                        //console.log(err);
+                        res.json({
+                            "code" : 2,
+                            "message" : "Sequelize error",
+                            "error" : err
+                        });
+                    });
+                    res.json(jsonResult);
+                }else{
+                    res.json({
+                        "code" : 3,
+                        "message" : "User not found"
+                    });
+                }
+                
+
+
+
+            }).catch(function(err){
+                //console.log(err);
+                res.json({
+                    "code" : 2,
+                    "message" : "Sequelize error",
+                    "error" : err
+                });
+            });
+
+        }else{
+            res.json({
+                "code" : 1,
+                "message" : "Missing required parameters"
+            });
+        }
+    });
 
 }

@@ -14,6 +14,9 @@ module.exports = sequelize.import("producer", function(sequelize, Datatypes) {
 		lastNameProducer : {
 			type : Datatypes.STRING
 		},
+		avatarProducer : {
+			type : Datatypes.STRING
+		},
 		firstNameProducer : {
 			type : Datatypes.STRING
         },
