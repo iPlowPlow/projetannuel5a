@@ -5,6 +5,7 @@ module.exports = function(app, models, TokenUtils) {
     app.post("/producer", function(req, res, next) {
         if (req.body.loginUser && req.body.lastNameProducer && req.body.firstNameProducer && req.body.emailProducer && req.body.phoneProducer && req.body.birthProducer && req.body.sexProducer && req.body.addressProducer && req.body.cityProducer && req.body.cpProducer && req.body.token) {
             var Producer = models.Producer;
+            var User = models.User;
             var idUser = null;
             TokenUtils.findIdUser(req.body.loginUser).then( function(result) { 
                 idUser = result.idUser;
@@ -16,6 +17,8 @@ module.exports = function(app, models, TokenUtils) {
                     });
                     
                 } else {
+                    
+
                     Producer.create({
                         "idUserProducer" : idUser,
                         "lastNameProducer" : req.body.lastNameProducer,
@@ -29,6 +32,19 @@ module.exports = function(app, models, TokenUtils) {
                         "cpProducer" : req.body.cpProducer,
                         "descriptionProducer" : req.body.descriptionProducer,
                     }).then(function(result){
+                        var request = {
+                            "where": {
+                                loginUser: req.body.loginUser
+                            }
+                        };
+                        var attributes = {};
+                        attributes.typeUser = "producer"
+                        User
+
+                        User.update(attributes, request).then(function (results) {                      
+                        }).catch(function (err) {
+                           
+                        });
                         var filePath=null;
                         if(req.body.avatarProducer!=null){
                             filePath = "ressources/producerAvatar/"+idUser+"/";
