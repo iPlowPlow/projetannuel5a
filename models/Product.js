@@ -7,7 +7,7 @@ module.exports = sequelize.import("product", function(sequelize, Datatypes) {
 			primaryKey : true,
 			autoIncrement : true
 		},
-		categorieId : {
+		categoryId : {
 			type : Datatypes.INTEGER
 		},
 		name : {

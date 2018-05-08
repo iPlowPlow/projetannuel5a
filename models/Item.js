@@ -10,6 +10,9 @@ module.exports = sequelize.import("Item", function(sequelize, Datatypes) {
 		price : {
 			type : Datatypes.FLOAT
 		},
+		adress : {
+			type : Datatypes.STRING
+		},
 		location : {
 			type : Datatypes.STRING
 		},
@@ -22,14 +25,11 @@ module.exports = sequelize.import("Item", function(sequelize, Datatypes) {
 		description : {
 			type : Datatypes.STRING
 		},
-		photoURL : {
-			type : Datatypes.STRING
-		},
 		//kg, unité, litres, etc
 		unitId : {
 			type : Datatypes.INTEGER
 		},
-		idProduit : {
+		idProduct : {
 			type : Datatypes.INTEGER
 		},
 		idUser : {
