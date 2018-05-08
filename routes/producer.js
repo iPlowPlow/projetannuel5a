@@ -1,6 +1,7 @@
 module.exports = function(app, models, TokenUtils) {
     var fs = require("fs");
 
+
     //CREATE Producer
     app.post("/producer", function(req, res, next) {
         if (req.body.loginUser && req.body.lastNameProducer && req.body.firstNameProducer && req.body.emailProducer && req.body.phoneProducer && req.body.birthProducer && req.body.sexProducer && req.body.addressProducer && req.body.cityProducer && req.body.cpProducer && req.body.token) {
@@ -130,35 +131,34 @@ module.exports = function(app, models, TokenUtils) {
 
                     var request2 =  {
                         where: {
-                            idProducer : req.body.idProducer
+                            idProducer : req.body.idProducer,
+                            //include: [{model:db.User}]
                         }
                     }
-                  
-                    CommentProducer.findAll(request2).then(function(result){
-
-
-
+                    var sequelize = models.sequelize;
+                                
+                    sequelize.query("SELECT  comment, starComment, dateComment, loginUser FROM commentProducer, user WHERE user.idUser = commentProducer.idUser AND idProducer = :idProducer Order BY dateComment",{ replacements: { idProducer:  req.body.idProducer }, type: sequelize.QueryTypes.SELECT  })
+                    .then(function(result){
+                        jsonResult.comment = result;
+                        res.json(jsonResult);
                     }).catch(function(err){
-                        //console.log(err);
+                        console.log(err);
                         res.json({
                             "code" : 2,
                             "message" : "Sequelize error",
                             "error" : err
                         });
                     });
-                    res.json(jsonResult);
+                    
                 }else{
                     res.json({
                         "code" : 3,
                         "message" : "User not found"
                     });
                 }
-                
-
-
 
             }).catch(function(err){
-                //console.log(err);
+                console.log(err);
                 res.json({
                     "code" : 2,
                     "message" : "Sequelize error",

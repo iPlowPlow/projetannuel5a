@@ -9,7 +9,6 @@ module.exports = sequelize.import("commentProducer", function(sequelize, Datatyp
         },
         idProducer : {
 			type : Datatypes.INTEGER,
-			//unique: true
 		},
 		idUser : {
 			type : Datatypes.INTEGER,
@@ -17,9 +16,12 @@ module.exports = sequelize.import("commentProducer", function(sequelize, Datatyp
 		comment : {
 			type : Datatypes.TEXT,
 		},
-		star : {
+		starComment : {
 			type : Datatypes.INTEGER,
-		}
+		},
+		dateComment  : {
+			type : Datatypes.DATEONLY
+		},
 	}, {
 		paranoid : true,
 		freezeTab : true,
