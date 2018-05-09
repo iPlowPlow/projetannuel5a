@@ -142,7 +142,7 @@ module.exports = function(app, models, TokenUtils) {
                         jsonResult.comment = result;
                         res.json(jsonResult);
                     }).catch(function(err){
-                        console.log(err);
+                        //console.log(err);
                         res.json({
                             "code" : 2,
                             "message" : "Sequelize error",
@@ -158,7 +158,7 @@ module.exports = function(app, models, TokenUtils) {
                 }
 
             }).catch(function(err){
-                console.log(err);
+                //console.log(err);
                 res.json({
                     "code" : 2,
                     "message" : "Sequelize error",
