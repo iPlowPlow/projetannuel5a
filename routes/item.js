@@ -2,8 +2,8 @@ module.exports = function (app, models) {
   var fs = require("fs");
   app.post("/item", function (req, res, next) {
     console.log(req.body);
-    if (req.body.userId && req.body.productId && req.body.name && req.body.description && req.body.adress
-    && req.body.location && req.body.photo && req.body.price && req.body.unitId && req.body.quantity) {
+    if (req.body.userId && req.body.productId && req.body.name && req.body.description && req.body.adress &&
+    req.body.location && req.body.photo && req.body.price && req.body.unitId && req.body.quantity) {
       var Item = models.Item;
       var id = null;
       if (req.body.id) {
@@ -21,31 +21,34 @@ module.exports = function (app, models) {
         "quantity": req.body.quantity,
         "idUser": req.body.userId
       }).then(function (result) {
-        console.log(result);
         var filePath=null;
         if (req.body.photo != null) {
-          filePath = "ressources/itemPhotos/" + result.id + "/";
-          if (!fs.existsSync(filePath)) {
-            fs.mkdirSync(filePath)
+          for(var imageIndex = 0; imageIndex < req.body.photo.length; imageIndex++){
+          (function (imageIndex) { // jshint ignore:line
+            filePath = "ressources/itemPhotos/" + result.id + "/";
+            if (!fs.existsSync(filePath)) {
+              fs.mkdirSync(filePath);
+            }
+
+            var extension = req.body.photo[imageIndex].name.split('.');
+            var oldpath = req.body.photo[imageIndex].path;
+            var newpath = filePath + imageIndex + "." + extension[extension.length - 1];
+
+            fs.readFile(oldpath, function (err, data) {
+              console.log('File read!');
+
+              // Write the file
+              fs.writeFile(newpath, data, function (err) {
+                console.log('File written!');
+              });
+
+              // Delete the file
+              fs.unlink(oldpath, function (err) {
+                console.log('File deleted!');
+              });
+            });
+            })(imageIndex);
           }
-
-          var extension = req.body.photo.name.split('.');
-          var oldpath = req.body.photo.path;
-          var newpath = filePath + "1." + extension[extension.length - 1];
-
-          fs.readFile(oldpath, function (err, data) {
-            console.log('File read!');
-
-            // Write the file
-            fs.writeFile(newpath, data, function (err) {
-              console.log('File written!');
-            });
-
-            // Delete the file
-            fs.unlink(oldpath, function (err) {
-              console.log('File deleted!');
-            });
-          });
         }
         res.json({
           "code": 0,
