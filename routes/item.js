@@ -70,4 +70,60 @@ module.exports = function (app, models) {
       });
     }
   });
-};
+
+  app.get("/item", function(req, res, next) {
+    if (req.body.idItem){
+     
+      var jsonResult = {} 
+      var sequelize = models.sequelize;                      
+      sequelize.query("SELECT price, location, quantity, item.name as itemName, description, photoURL, loginUser, category.name as categoryName, product.name as productName, unit.name as unitName, idProducer FROM item, product, category, unit, user, producer WHERE item.idUser = producer.idUserProducer AND item.idUser = user.idUser AND item.idProduit = product.id AND item.unitId = unit.id AND product.categorieId = category.id AND item.id = :idItem ",{ replacements: { idItem:  req.body.idItem }, type: sequelize.QueryTypes.SELECT  })
+        .then(function(result){
+            if(result){
+              jsonResult.code = 0;
+              jsonResult.infoItem = result[0];
+              //pour récup les étoiles
+              var CommentProducer = models.CommentProducer
+              var request = {
+                attributes: ["starComment"],
+                where: {
+                  idProducer : jsonResult.infoItem.idProducer
+                }
+              };
+              CommentProducer.findAll(request).then(function(result2){
+                jsonResult.stars = result2
+                res.json(jsonResult);
+              }).catch(function(err){
+                //console.log(err);
+                res.json({
+                    "code" : 2,
+                    "message" : "Sequelize error",
+                    "error" : err
+                });
+              });
+
+            }else{
+              res.json({
+                "code" : 3,
+                "message" : "Item not found"
+              });
+            }
+           
+        }).catch(function(err){
+            //console.log(err);
+            res.json({
+                "code" : 2,
+                "message" : "Sequelize error",
+                "error" : err
+            });
+        });
+
+    }else {
+      res.json({
+        "code": 1,
+        "message": "Missing required parameters"
+      });
+    }
+  });
+
+
+}

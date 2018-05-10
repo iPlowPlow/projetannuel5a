@@ -1,6 +1,8 @@
 var express  = require("express");
 var app = express();
 var models = require("./models");
+var utils = require("./utils");
+var TokenUtils = utils.TokenUtils;
 
 var config = require("config");  // we use node-config to handle environments
 require("./env.js");
@@ -16,7 +18,6 @@ module.exports = app;
     })
 );*/
 
-
 app.use(
     bodyParser.urlencoded({
         extended: true
@@ -24,9 +25,8 @@ app.use(
 );
 
 app.use(bodyParser.json());
-
-
-require("./routes")(app, models);
+app.use(express.static(__dirname + "/ressources"));
+require("./routes")(app, models, TokenUtils);
 
 var port=process.env.PORT || 8888;
 
