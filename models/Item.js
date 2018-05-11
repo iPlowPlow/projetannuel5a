@@ -13,6 +13,9 @@ module.exports = sequelize.import("Item", function(sequelize, Datatypes) {
 		adress : {
 			type : Datatypes.STRING
 		},
+		city : {
+			type : Datatypes.STRING
+		},
 		location : {
 			type : Datatypes.STRING
 		},

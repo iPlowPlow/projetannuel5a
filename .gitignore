@@ -58,3 +58,4 @@ typings/
 .env
 
 ressources/producerAvatar
+config/development.json
