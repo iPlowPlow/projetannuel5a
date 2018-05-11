@@ -76,11 +76,13 @@ module.exports = function (app, models) {
      
       var jsonResult = {} 
       var sequelize = models.sequelize;                      
-      sequelize.query("SELECT price, location, quantity, item.name as itemName, description, photoURL, loginUser, category.name as categoryName, product.name as productName, unit.name as unitName, idProducer FROM item, product, category, unit, user, producer WHERE item.idUser = producer.idUserProducer AND item.idUser = user.idUser AND item.idProduit = product.id AND item.unitId = unit.id AND product.categorieId = category.id AND item.id = :idItem ",{ replacements: { idItem:  req.body.idItem }, type: sequelize.QueryTypes.SELECT  })
+      sequelize.query("SELECT price, location, quantity, item.name as itemName, description, loginUser, category.name as categoryName, product.name as productName, unit.name as unitName, idProducer FROM item, product, category, unit, user, producer WHERE item.idUser = producer.idUserProducer AND item.idUser = user.idUser AND item.idProduct = product.id AND item.unitId = unit.id AND product.categoryId = category.id AND item.id = :idItem ",{ replacements: { idItem:  req.body.idItem }, type: sequelize.QueryTypes.SELECT  })
         .then(function(result){
             if(result){
               jsonResult.code = 0;
               jsonResult.infoItem = result[0];
+              //A changer pour le multi upload
+              jsonResult.infoItem.photoURL = "default";
               //pour récup les étoiles
               var CommentProducer = models.CommentProducer
               var request = {
