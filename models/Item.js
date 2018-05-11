@@ -25,6 +25,9 @@ module.exports = sequelize.import("Item", function(sequelize, Datatypes) {
 		name : {
 			type : Datatypes.STRING
 		},
+		fileExtensions : {
+			type : Datatypes.STRING
+		},
 		description : {
 			type : Datatypes.STRING
 		},

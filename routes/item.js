@@ -9,6 +9,15 @@ module.exports = function (app, models) {
       if (req.body.id) {
         id = req.body.id;
       }
+      var photosExtensions = "";
+      photosExtensions += req.body.photo[0].name.split('.')[1]+";";
+      if(req.body.photo[1]){
+        photosExtensions += req.body.photo[1].name.split('.')[1]+";";
+        if(req.body.photo[2]){
+          photosExtensions += req.body.photo[2].name.split('.')[1];
+        }
+      }
+      console.log(req.body.photo[0]);
       Item.create({
         "id": id,
         "idProduct": req.body.productId,
@@ -17,6 +26,7 @@ module.exports = function (app, models) {
         "adress": req.body.adress,
         "location": req.body.location,
         "city": req.body.city,
+        "fileExtensions": photosExtensions,
         "price": req.body.price,
         "unitId": req.body.unitId,
         "quantity": req.body.quantity,
@@ -128,7 +138,7 @@ module.exports = function (app, models) {
 
 
   app.get("/item/filter", function(req, res, next) {
-    var query = "SELECT item.id, price, location, city, quantity, item.name as itemName, description, loginUser, category.name as categoryName, product.name as productName,"
+    var query = "SELECT item.id, price, location, city, quantity, item.name as itemName, item.fileExtensions, description, loginUser, category.name as categoryName, product.name as productName,"
         +"category.id as categId, product.id as productId, unit.name as unitName, idProducer, producer.lastNameProducer as producerName, producer.firstNameProducer as producerFirstName FROM item, product, category, unit, user, producer WHERE item.idUser = producer.idUserProducer "
         +"AND item.idUser = user.idUser AND item.idProduct = product.id AND item.unitId = unit.id AND product.categoryId = category.id";
     
@@ -146,7 +156,7 @@ module.exports = function (app, models) {
       query += " AND item.city ='" +req.query.city+"'";
     }
     if(req.query.remainingQuantity){
-      query += " AND item.quantity > " +req.query.city;
+      query += " AND item.quantity > " +req.query.remainingQuantity;
     }
     if(req.query.producerId){
       query += " AND item.idUser = "+ req.query.producerId;
@@ -154,7 +164,9 @@ module.exports = function (app, models) {
     if(req.query.limit){
       query += ' LIMIT '+req.query.limit+' ;';
       var jsonResult = {} 
-      var sequelize = models.sequelize;                      
+      var sequelize = models.sequelize;  
+      console.log("QUERY:");
+      console.log(query);               
       sequelize.query(query,{ type: sequelize.QueryTypes.SELECT  })
         .then(function(result){
             if(result){
