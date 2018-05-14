@@ -1,11 +1,12 @@
-module.exports = function (app, models) {
+module.exports = function (app, models, TokenUtils) {
   var fs = require("fs");
   app.post("/item", function (req, res, next) {
     console.log(req.body);
-    if (req.body.userId && req.body.productId && req.body.name && req.body.description && req.body.adress &&
+    if (req.body.token && req.body.productId && req.body.name && req.body.description && req.body.adress &&
     req.body.location && req.body.photo && req.body.price && req.body.unitId && req.body.quantity && req.body.city) {
       var Item = models.Item;
       var id = null;
+      var userId;
       if (req.body.id) {
         id = req.body.id;
       }
@@ -17,7 +18,8 @@ module.exports = function (app, models) {
           photosExtensions += req.body.photo[2].name.split('.')[1];
         }
       }
-      console.log(req.body.photo[0]);
+      
+      userId = TokenUtils.getIdAndType(req.body.token).id;
       Item.create({
         "id": id,
         "idProduct": req.body.productId,
@@ -30,7 +32,7 @@ module.exports = function (app, models) {
         "price": req.body.price,
         "unitId": req.body.unitId,
         "quantity": req.body.quantity,
-        "idUser": req.body.userId
+        "idUser": userId
       }).then(function (result) {
         var filePath=null;
         if (req.body.photo != null) {
