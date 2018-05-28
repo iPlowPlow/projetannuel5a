@@ -1,5 +1,6 @@
 module.exports = function (app, models, TokenUtils) {
   var fs = require("fs");
+  const empty = require('empty-folder');
   app.post("/item", function (req, res, next) {
     console.log(req.body);
     if (req.body.token && req.body.productId && req.body.name && req.body.description && req.body.adress &&
@@ -84,12 +85,104 @@ module.exports = function (app, models, TokenUtils) {
     }
   });
 
+  app.post("/item/edit", function (req, res, next) {
+    console.log(req.body);
+    var item = req.body.item;
+    if (item.id && req.body.token && item.productId && item.name && item.description && item.adress &&
+    item.location && req.body.photo && item.price && item.unitId && item.quantity && item.city) {
+      var Item = models.Item;
+      var userId;
+      var photosExtensions = "";
+      if (req.body.photo[0].size != 0) {
+        photosExtensions += req.body.photo[0].name.split('.')[1]+";";
+        if(req.body.photo[1]){
+          photosExtensions += req.body.photo[1].name.split('.')[1]+";";
+          if(req.body.photo[2]){
+            photosExtensions += req.body.photo[2].name.split('.')[1];
+          }
+        }
+      }else photosExtensions = item.fileExtensions;
+      console.log(photosExtensions);
+      userId = TokenUtils.getIdAndType(req.body.token).id;
+      Item.update({
+          "idProduct": item.productId,
+          "name": item.name,
+          "description": item.description,
+          "adress": item.adress,
+          "location": item.location,
+          "city": item.city,
+          "fileExtensions": photosExtensions,
+          "price": item.price,
+          "unitId": item.unitId,
+          "quantity": item.quantity,
+          "idUser": userId
+        },
+        {where: {id: item.id} }
+      )
+      .then(function(result) {
+        console.log(result);
+        console.log(result[0]);
+        var filePath=null;
+        if (req.body.photo[0].size != 0) {
+          for(var imageIndex = 0; imageIndex < req.body.photo.length; imageIndex++){
+          (function (imageIndex) { // jshint ignore:line
+            filePath = "ressources/itemPhotos/" + result[0] + "/";
+            if (!fs.existsSync(filePath)) {
+              fs.mkdirSync(filePath);
+            }
+            empty(filePath, false, (o)=>{
+              if(o.error) console.error(err);
+              //console.log(o.removed);
+              //console.log(o.failed);
+            });
+            var extension = req.body.photo[imageIndex].name.split('.');
+            var oldpath = req.body.photo[imageIndex].path;
+            var newpath = filePath + imageIndex + "." + extension[extension.length - 1];
+
+            fs.readFile(oldpath, function (err, data) {
+              console.log('File read!');
+
+              // Write the file
+              fs.writeFile(newpath, data, function (err) {
+                console.log('File written!');
+              });
+
+              // Delete the file
+              fs.unlink(oldpath, function (err) {
+                console.log('File deleted!');
+              });
+            });
+            })(imageIndex);
+          }
+        }
+        res.json({
+          "code": 0,
+          "id": result[0]
+        });
+      }).catch(function (err) {
+        console.log(err);
+        res.json({
+          "code": 2,
+          "message": "Sequelize error",
+          "error": err
+        });
+      });
+    } else {
+      res.json({
+        "code": 1,
+        "message": "Missing required parameters"
+      });
+    }
+  });
+
   app.get("/item", function(req, res, next) {
     if (req.body.idItem){
      
       var jsonResult = {} 
       var sequelize = models.sequelize;                      
-      sequelize.query("SELECT price, location, quantity, item.name as itemName, description, loginUser, category.name as categoryName, product.name as productName, unit.name as unitName, idProducer FROM item, product, category, unit, user, producer WHERE item.idUser = producer.idUserProducer AND item.idUser = user.idUser AND item.idProduct = product.id AND item.unitId = unit.id AND product.categoryId = category.id AND item.id = :idItem ",{ replacements: { idItem:  req.body.idItem }, type: sequelize.QueryTypes.SELECT  })
+      sequelize.query("SELECT item.id, price, item.adress, description, location, city, quantity, item.name as itemName, item.fileExtensions, description, loginUser, category.name as categoryName, product.name as productName,"
+        +"category.id as categId, product.id as productId, unit.id as unitId, unit.name as unitName, idProducer, producer.lastNameProducer as producerName, producer.firstNameProducer as producerFirstName, user.loginUser as login FROM item, product, category, unit, user, producer WHERE item.idUser = producer.idUserProducer "
+        +"AND item.idUser = user.idUser AND item.idProduct = product.id AND item.unitId = unit.id AND product.categoryId = category.id AND item.id = :idItem ",{ replacements: { idItem:  req.body.idItem }, type: sequelize.QueryTypes.SELECT  })
         .then(function(result){
             if(result){
               jsonResult.code = 0;
@@ -143,7 +236,7 @@ module.exports = function (app, models, TokenUtils) {
 
   app.get("/item/filter", function(req, res, next) {
     var query = "SELECT item.id, price, location, city, quantity, item.name as itemName, item.fileExtensions, description, loginUser, category.name as categoryName, product.name as productName,"
-        +"category.id as categId, product.id as productId, unit.name as unitName, idProducer, producer.lastNameProducer as producerName, producer.firstNameProducer as producerFirstName FROM item, product, category, unit, user, producer WHERE item.idUser = producer.idUserProducer "
+        +"category.id as categId, product.id as productId, unit.name as unitName, idProducer, producer.lastNameProducer as producerName, producer.firstNameProducer as producerFirstName, user.loginUser as login FROM item, product, category, unit, user, producer WHERE item.idUser = producer.idUserProducer "
         +"AND item.idUser = user.idUser AND item.idProduct = product.id AND item.unitId = unit.id AND product.categoryId = category.id";
     
     if (req.query.productId){
@@ -200,6 +293,4 @@ module.exports = function (app, models, TokenUtils) {
       });
     }
   });
-
-
 }
