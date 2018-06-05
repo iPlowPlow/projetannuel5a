@@ -2,7 +2,7 @@ module.exports = function (app, models, TokenUtils) {
   var fs = require("fs");
   const empty = require('empty-folder');
   app.post("/item", function (req, res, next) {
-    console.log(req.body);
+    //console.log(req.body);
     if (req.body.token && req.body.productId && req.body.name && req.body.description && req.body.adress &&
     req.body.location && req.body.photo && req.body.price && req.body.unitId && req.body.quantity && req.body.city) {
       var Item = models.Item;
@@ -102,7 +102,7 @@ module.exports = function (app, models, TokenUtils) {
           }
         }
       }else photosExtensions = item.fileExtensions;
-      console.log(photosExtensions);
+      //console.log(photosExtensions);
       userId = TokenUtils.getIdAndType(req.body.token).id;
       Item.update({
           "idProduct": item.productId,
@@ -237,7 +237,7 @@ module.exports = function (app, models, TokenUtils) {
   app.get("/item/filter", function(req, res, next) {
     var query = "SELECT item.id, price, location, city, quantity, item.name as itemName, item.fileExtensions, description, loginUser, category.name as categoryName, product.name as productName,"
         +"category.id as categId, product.id as productId, unit.name as unitName, idProducer, producer.lastNameProducer as producerName, producer.firstNameProducer as producerFirstName, user.loginUser as login FROM item, product, category, unit, user, producer WHERE item.idUser = producer.idUserProducer "
-        +"AND item.idUser = user.idUser AND item.idProduct = product.id AND item.unitId = unit.id AND product.categoryId = category.id";
+        +"AND item.idUser = user.idUser AND item.idProduct = product.id AND item.unitId = unit.id AND product.categoryId = category.id and item.deletedAt IS NULL ORDER BY Item.createdAt DESC ";
     
     if (req.query.productId){
       query += " AND item.idProduct = "+ req.query.productId;
@@ -259,16 +259,22 @@ module.exports = function (app, models, TokenUtils) {
       query += " AND item.idUser = "+ req.query.producerId;
     }
     if(req.query.limit){
-      query += ' LIMIT '+req.query.limit+' ;';
+      query += ' LIMIT 20 OFFSET '+req.query.limit+' ;';
       var jsonResult = {} 
       var sequelize = models.sequelize;  
-      console.log("QUERY:");
-      console.log(query);               
+      //console.log("QUERY:");
+      //console.log(query); 
+      sequelize.query("Select COUNT(id) as nbTotalItem FROM item",{ type: sequelize.QueryTypes.SELECT  })
+        .then(function(result){
+          jsonResult.nbTotalItem = result[0].nbTotalItem;
+        })
+        
+      
       sequelize.query(query,{ type: sequelize.QueryTypes.SELECT  })
         .then(function(result){
-            if(result){
+            if(result){    
               jsonResult.code = 0;
-              jsonResult.list = result;
+              jsonResult.list = result;          
               res.json(jsonResult);
             }else{
               res.json({
@@ -278,7 +284,7 @@ module.exports = function (app, models, TokenUtils) {
             }
            
         }).catch(function(err){
-            //console.log(err);
+            console.log(err);
             res.json({
                 "code" : 2,
                 "message" : "Sequelize error",
